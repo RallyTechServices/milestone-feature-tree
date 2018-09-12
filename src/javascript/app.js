@@ -5,12 +5,13 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     defaults: { margin: 10 },
 
     items: [
-        {xtype:'container',flex: 1, itemId:'header', minHeight: 100},
-        {xtype:'container',flex: 1, itemId:'display_box'}
+        {xtype:'container', itemId:'header', minHeight: 30},
+        {xtype:'container', itemId:'filter_container', minHeight: 50},
+        {xtype:'container', itemId:'display_box'}
     ],
 
-    milestoneStore: null,
-    milestoneTreeStore: null,
+    // targetFilter is the filter for the top-level item(s)
+    targetFilter: null,
 
     integrationHeaders : {
         name : "CArABU.app.MilestoneFeatureTree"
@@ -22,31 +23,105 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             scope: this,
             success:function(models){
                 this.models = models;
-                this.logger.log("Models: ", models);
-                this._addTree();
+                this._addControls();
             },
             failure: function(msg) {
                 alert(msg);
             }
         });
+
+    },
+
+    _addControls: function() {
+        var container = this.down('#header'),
+            blackListFields = ['FlowState'],
+            whiteListFields = ['Tags'];
+
+        container.add({
+            xtype: 'rallyinlinefiltercontrol',
+            align: 'left',
+            inlineFilterButtonConfig: {
+                stateful: true,
+                stateId: this.getContext().getScopedStateId('ms-inline-filter'),
+                context: this.getContext(),
+                modelNames: ['milestone'],
+                filterChildren: false,
+                inlineFilterPanelConfig: {
+                    quickFilterPanelConfig: {
+                        defaultFields: ['ArtifactSearch'],
+                        addQuickFilterConfig: {
+                            blackListFields: blackListFields,
+                            whiteListFields: whiteListFields
+                        }
+                    },
+                    advancedFilterPanelConfig: {
+                        advancedFilterRowsConfig: {
+                            propertyFieldConfig: {
+                                blackListFields: blackListFields,
+                                whiteListFields: whiteListFields
+                            }
+                        }
+                    }
+                },
+                listeners: {
+                    inlinefilterchange: this._onFilterChange,
+                    inlinefilterready: function (inlineFilterPanel) {
+                      this.down('#filter_container').add(inlineFilterPanel);
+                    },
+                    scope: this
+                }
+            }
+        });
+
+    },
+
+    _onFilterChange: function(inlineFilterButton) {
+        this.logger.log('--',inlineFilterButton.getTypesAndFilters());
+        var typesandfilters = inlineFilterButton.getTypesAndFilters();
+
+        this.targetFilter = typesandfilters && typesandfilters.filters;
+        if ( this.targetFilter.length === 0 ) {
+            this.targetFilter = null;
+        } else {
+            this.targetFilter = this.targetFilter[0];
+        }
+
+        this._addTree();
     },
 
     _addTree: function() {
         var container = this.down('#display_box');
         container.removeAll();
 
+        this.setLoading("Loading...");
+
         var available_height = this._getAvailableTreeHeight();
         this.logger.log('Height: ', available_height);
-
-        container.add({
+        var tree_config = {
             xtype:'tsmilestonetree',
             columns: this._getColumns(),
             targetType: 'Milestone',
             height: available_height,
             maxHeight: available_height,
             logger: this.logger,
-            respectScopeForChildren: true
-        });
+            respectScopeForChildren: true,
+            listeners: {
+                scope: this,
+                afterrender: function() {
+                    this.setLoading("Loading tree...");
+                },
+                afterloadtargets: function(tree,items) {
+                    this.setLoading("Finding children (" + items.length + ")");
+                },
+                aftertree: function() {
+                    this.setLoading(false);
+                }
+            }
+        };
+        if ( this.targetFilter ) {
+            tree_config.targetFilter = this.targetFilter;
+        }
+        container.add(tree_config);
     },
 
     //
@@ -74,6 +149,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 itemId: 'tree_column',
                 renderer: name_renderer,
                 minWidth: 400,
+                flex: 1,
                 menuDisabled: true,
                 otherFields: ['FormattedID','ObjectID']
             },
@@ -239,150 +315,6 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             failure:deferred.reject
         });
         return deferred.promise;
-    },
-
-    _temp: function() {
-        if ( ! this.milestoneStore ) {
-            this.milestoneStore = Ext.create('Rally.data.wsapi.Store',{
-                model: 'Milestone',
-                listeners: {
-                    scope: this,
-                    load: function(store,milestones) {
-                        var filters = [];
-                        Ext.Array.each(milestones, function(milestone){
-                            //if ( record.get(TotalArtifactCount) > 0) {
-                                filters.push({
-                                    property: "Milestones.ObjectID",
-                                    operator: "=",
-                                    value: milestone.get('ObjectID')
-                                });
-                            //}
-                        });
-
-                        if ( filters.length === 0 ) {
-                            console.log('No Milestones with items');
-                        } else {
-                            console.log("Found " + milestones.length + " milestones");
-                            var config = {
-                                model: 'PortfolioItem/Feature',
-                                fetch: ['Name','State','Milestones'],
-                                filters: Rally.data.wsapi.Filter.or(filters)
-                            };
-                            TSUtilities.loadWsapiRecords(config).then({
-                                success: function(features) {
-                                    var store = me._updateTree(milestones,features);
-                                },
-                                failure: function(msg) {
-                                    Ext.Msg.show({
-                                        msg: msg
-                                    });
-                                }
-                            }).always(function(){ me.setLoading(false);});
-                        }
-                    }
-                }
-            });
-        }
-
-        this.milestoneStore.load();
-    },
-
-    /*
-     * TODO: move to a model for milestones
-     */
-    _updateMilestoneCalculations: function(milestone){
-        milestone.set('__filteredChildCount',0);
-        milestone.set('__filteredChildEstimate',0);
-        Ext.Array.each(milestone.get('children') || [], function(child){
-            milestone.set('__filteredChildCount', milestone.get('__filteredChildCount') + 1);
-        });
-        return milestone;
-    },
-
-    _updateTree: function(milestones,features) {
-        Rally.getApp() && Rally.getApp().setLoading('Calculating...');
-        var milestonesByID = {};
-        Ext.Array.each(milestones, function(milestone){
-            milestone.set('children',[]);
-            milestonesByID[milestone.get('ObjectID')] = milestone;
-        });
-        Ext.Array.each(features, function(feature){
-            if ( feature.get('Milestones')) {
-                var tagArray = feature.get('Milestones')._tagsNameArray;
-                Ext.Array.each(tagArray, function(tag){
-                    var oid = parseInt(tag._ref.replace(/.*\//,''), 10);
-                    if ( milestonesByID[oid] ) {
-                        var featureArray = milestonesByID[oid].get('children');
-                        featureArray.push(feature);
-                        milestonesByID[oid].set('children',featureArray);
-                    }
-                });
-            }
-        });
-
-        Ext.Array.each(milestones, function(milestone){
-            milestone = this._updateMilestoneCalculations(milestone);
-        },this);
-
-        var store = Ext.create('Ext.data.TreeStore',{
-            root: { "children": milestones },
-            proxy: {
-                type: "memory"
-            }
-        });
-        return milestones;
-    },
-
-    todo: function() {
-        Deft.Chain.sequence([
-            function() {
-                return TSUtilities.loadAStoreWithAPromise('Defect',['Name','State']);
-            },
-            function() {
-                return TSUtilities.loadWsapiRecords({
-                    model:'Defect',
-                    fetch: ['Name','State']
-                });
-            }
-        ]).then({
-            scope: this,
-            success: function(results) {
-                var store = results[0];
-                var defects = results[1];
-                var field_names = ['Name','State'];
-
-                this._displayGridGivenStore(store,field_names);
-                this._displayGridGivenRecords(defects,field_names);
-            },
-            failure: function(error_message){
-                alert(error_message);
-            }
-        }).always(function() {
-            me.setLoading(false);
-        });
-    },
-
-    _displayGridGivenStore: function(store,field_names){
-        this.down('#grid_box1').add({
-            xtype: 'rallygrid',
-            store: store,
-            columnCfgs: field_names
-        });
-    },
-
-    _displayGridGivenRecords: function(records,field_names){
-        var store = Ext.create('Rally.data.custom.Store',{
-            data: records
-        });
-
-        var cols = Ext.Array.map(field_names, function(name){
-            return { dataIndex: name, text: name, flex: 1 };
-        });
-        this.down('#grid_box2').add({
-            xtype: 'rallygrid',
-            store: store,
-            columnCfgs: cols
-        });
     },
 
     getSettingsFields: function() {

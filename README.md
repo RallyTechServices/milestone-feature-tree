@@ -19,7 +19,6 @@ associated with the milestones.
     * Convert is used because a roll up of .5 and .5 should not equal 1 and would only match .5 if stories are exactly distributed
 
 * TODO:
-    * Advanced Query Filter
     * Column Selector
     * Export?
 

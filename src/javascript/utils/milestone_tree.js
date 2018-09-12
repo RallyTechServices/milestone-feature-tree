@@ -4,12 +4,12 @@
     columns: [],
     cls: 'rally-grid',
     /**
-     * @cfg {String} targetQuery
+     * @cfg {String} targetFilter
      *
      * WSAPI query to be applied at the target level
      *
      */
-    targetQuery: '(ObjectID > 0)',
+    targetFilter: '(ObjectID > 0)',
     /**
      * @cfg {String} targetType
      *
@@ -29,6 +29,8 @@
     targetChunk: 125,
 
     respectScopeForChildren: true,
+
+    layout: 'fit',
 
     initComponent: function() {
         if ( this.columns.length == 0 ) { throw("Missing required setting: columns"); }
@@ -102,7 +104,7 @@
                 Ext.Array.each(target_items,function(item){
                     fetched_items_by_oid[item.get('ObjectID')] = item;
                 });
-                this.fireEvent('afterloadtargets',this);
+                this.fireEvent('afterloadtargets',this,target_items);
                 var promises = [];
 
                 promises.push(this._fetchChildItems(target_items,fetched_items_by_oid));
@@ -131,8 +133,8 @@
 
         var query = '( ObjectID > 0 )';
 
-        if ( this.targetQuery ){
-            query = this.targetQuery;
+        if ( this.targetFilter ){
+            query = this.targetFilter;
         }
 
         var filters = null;
