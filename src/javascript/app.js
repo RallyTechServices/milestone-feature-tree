@@ -33,14 +33,37 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     },
 
     _addControls: function() {
-        var container = this.down('#header'),
-            blackListFields = ['FlowState'],
-            whiteListFields = ['Tags'];
+        var container = this.down('#header')
 
-        container.add(this._getFilterConfig());
+        container.add(this._getFilterPickerConfig());
+        container.add(this._getColumnPickerConfig());
     },
 
-    _getFilterConfig: function() {
+    _getColumnPickerConfig: function() {
+        return {
+            xtype:'tsfieldpickerbutton',
+            modelNames: ['milestone','portfolioitem'],
+            fieldBlackList: ['Changesets','Connections','Collaborators',
+                'Description','Notes','ObjectID','ObjectUUID','RevisionHistory',
+                'Risks','Subscription','VersionId','Workspace'],
+            context: this.getContext(),
+            stateful: true,
+            stateId: this.getContext().getScopedStateId('fieldpicker'),
+            alwaysSelectedValues: ['FormattedID', 'Name', 'PercentDoneByStoryPlanEstimate', 'PercentDoneByStoryCount'],
+            listeners: {
+                fieldsupdated: function(fields){
+                    console.log('fields',fields);
+                    this._addTree();
+                },
+                afterrender: this._addTree,
+                scope: this
+            }
+        };
+    },
+
+    _getFilterPickerConfig: function() {
+        var blackListFields = ['FlowState'],
+            whiteListFields = ['Tags'];
         return {
             xtype: 'rallyinlinefiltercontrol',
             align: 'left',
@@ -76,7 +99,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 }
             }
         };
-    };
+    },
 
     _onFilterChange: function(inlineFilterButton) {
         this.logger.log('--',inlineFilterButton.getTypesAndFilters());
@@ -172,13 +195,6 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 }
             },
             {
-                text:'Owner',
-                dataIndex: 'Owner',
-                renderer: function(value,meta_data,record) {
-                    return me._magicRenderer({name:'Owner'},value,meta_data,record) || "";
-                }
-            },
-            {
                 text:'Leaf Story Count',
                 dataIndex:'LeafStoryCount',
                 menuDisabled: true,
@@ -253,12 +269,30 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             }
         ];
 
-        if ( this.additional_columns ) {
-            this.logger.log("Additional fields: ", this.additional_columns);
-            Ext.Array.each(this.additional_columns, function(field) {
+        var fieldpicker = this.down('tsfieldpickerbutton');
+
+        var additional_fields = fieldpicker && fieldpicker.getFields();
+        if ( additional_fields ) {
+            this.logger.log("Additional fields: ", additional_fields);
+            var blackListFields = ['FormattedID','Name','PercentDoneByStoryPlanEstimate','PercentDoneByStoryCount'];
+
+            Ext.Array.each(additional_fields, function(field_name) {
+
+                if ( Ext.Array.contains(blackListFields,field_name) ) {
+                    return;
+                }
+                var field = null;
+                Ext.Object.each(me.models, function(key,model){
+                    field = model.getField(field_name);
+                    console.log(key,field_name);
+                    if ( field ) { return false; }
+                });
+
+                if ( !field ) { console.log('cannot find field ', field_name); }
+
                 columns.push({
-                    text:field.get('displayName').replace(/\(.*\)/,""),
-                    dataIndex:field.get('name'),
+                    text:field.displayName.replace(/\(.*\)/,""),
+                    dataIndex:field.name,
                     menuDisabled: true,
                     renderer:function(value,meta_data,record){
                         return me._magicRenderer(field,value,meta_data,record) || "";
@@ -306,7 +340,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
         TSUtilities.fetchPortfolioNames().then({
             scope: this,
             success:function(pi_names){
-                var model_names = Ext.Array.merge(['milestone','hierarchicalrequirement'],pi_names);
+                var model_names = Ext.Array.merge(pi_names,['milestone','hierarchicalrequirement']);
                 Rally.data.ModelFactory.getModels({
                     types: model_names,
                     success: function(model_hash) {

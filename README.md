@@ -19,7 +19,8 @@ associated with the milestones.
     * Convert is used because a roll up of .5 and .5 should not equal 1 and would only match .5 if stories are exactly distributed
 
 * TODO:
-    * Column Selector
+    * Column Rearranging & Persisting sizing
+    * Scrolling large width
     * Export?
 
 ### First Load
