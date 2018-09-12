@@ -37,7 +37,11 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             blackListFields = ['FlowState'],
             whiteListFields = ['Tags'];
 
-        container.add({
+        container.add(this._getFilterConfig());
+    },
+
+    _getFilterConfig: function() {
+        return {
             xtype: 'rallyinlinefiltercontrol',
             align: 'left',
             inlineFilterButtonConfig: {
@@ -71,9 +75,8 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                     scope: this
                 }
             }
-        });
-
-    },
+        };
+    };
 
     _onFilterChange: function(inlineFilterButton) {
         this.logger.log('--',inlineFilterButton.getTypesAndFilters());
