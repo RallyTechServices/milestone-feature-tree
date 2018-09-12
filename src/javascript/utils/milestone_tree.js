@@ -28,8 +28,7 @@
      */
     targetChunk: 125,
 
-    pruneFieldName: null,
-    pruneFieldValue: null,
+    respectScopeForChildren: true,
 
     initComponent: function() {
         if ( this.columns.length == 0 ) { throw("Missing required setting: columns"); }
@@ -267,14 +266,11 @@
             }));
         }
 
-        Ext.create('Rally.data.wsapi.Store', {
+        var config = {
             autoLoad: true,
             model: model_name,
             fetch: this._getFetchNames(),
             filters: filters,
-            context: {
-                project: null
-            },
             listeners:  {
                 scope: this,
                 load: function(store, records, success){
@@ -283,9 +279,16 @@
                     } else {
                         deferred.reject('Error loading ' + model_name + ' items');
                     }
-               }
-           }
-        });
+                }
+            }
+        };
+
+        if ( ! this.respectScopeForChildren ) {
+            config.context = {
+                project: null
+            }
+        }
+        Ext.create('Rally.data.wsapi.Store', config);
         return deferred.promise;
     },
     _fetchItemsByOIDArray:function(model_name,oids){

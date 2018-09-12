@@ -44,7 +44,8 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             targetType: 'Milestone',
             height: available_height,
             maxHeight: available_height,
-            logger: this.logger
+            logger: this.logger,
+            respectScopeForChildren: true
         });
     },
 
