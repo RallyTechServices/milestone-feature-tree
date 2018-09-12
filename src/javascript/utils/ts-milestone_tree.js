@@ -3,6 +3,7 @@
     alias: 'widget.tsmilestonetree',
     columns: [],
     cls: 'rally-grid',
+    tree_cls: 'ts-rally-grid',
     /**
      * @cfg {String} targetFilter
      *
@@ -30,7 +31,8 @@
 
     respectScopeForChildren: true,
 
-    layout: 'fit',
+    layout: 'border',
+    //autoScroll: true,
 
     initComponent: function() {
         if ( this.columns.length == 0 ) { throw("Missing required setting: columns"); }
@@ -326,15 +328,20 @@
                 }
             });
 
+            this.logger.log("width:", this.width);
             var tree = this.add({
                 xtype:'treepanel',
+                region: 'center',
                 store: tree_store,
-                cls: this.cls,
+                cls: this.tree_cls,
                 rootVisible: false,
                 enableColumnMove: false,
                 sortableColumns: false,
+                autoScroll: true,
                 rowLines: true,
+                width: this.width,
                 height: this.height,
+
                 columns: this.columns
             });
         }

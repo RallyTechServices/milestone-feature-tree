@@ -15,3 +15,17 @@
     margin-right: 5px;
     cursor: pointer;
 }
+
+.x-tree-panel.ts-rally-grid .x-grid-body .x-grid-row .x-grid-cell .x-grid-cell-inner .x-tree-elbow-plus, .x-tree-panel.ts-rally-grid .x-grid-body .x-grid-row .x-grid-cell .x-grid-cell-inner .x-tree-elbow-end-plus {
+    background-image: url(/slm/js-lib/rui/builds/rui/resources/css/images/grid/node-collapsed.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 11px 11px;
+}
+
+.x-tree-panel.ts-rally-grid .x-grid-body .x-grid-data-row.x-grid-tree-node-expanded .x-grid-cell .x-tree-elbow-plus, .x-tree-panel.ts-rally-grid .x-grid-body .x-grid-data-row.x-grid-tree-node-expanded .x-grid-cell .x-tree-elbow-end-plus {
+    background-image: url(/slm/js-lib/rui/builds/rui/resources/css/images/grid/node-expanded.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 11px 11px;
+}

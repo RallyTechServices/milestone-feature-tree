@@ -52,7 +52,6 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             alwaysSelectedValues: ['FormattedID', 'Name', 'PercentDoneByStoryPlanEstimate', 'PercentDoneByStoryCount'],
             listeners: {
                 fieldsupdated: function(fields){
-                    console.log('fields',fields);
                     this._addTree();
                 },
                 afterrender: this._addTree,
@@ -122,13 +121,16 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
         this.setLoading("Loading...");
 
         var available_height = this._getAvailableTreeHeight();
-        this.logger.log('Height: ', available_height);
+        var available_width = this._getAvailableTreeWidth();
+        this.logger.log('Height/Width: ', available_height, available_width);
+
         var tree_config = {
             xtype:'tsmilestonetree',
             columns: this._getColumns(),
             targetType: 'Milestone',
             height: available_height,
             maxHeight: available_height,
+            width: available_width,
             logger: this.logger,
             respectScopeForChildren: true,
             listeners: {
@@ -156,6 +158,11 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
         var available_height = body_height - 100;
         return Ext.max([200,available_height]);
     },
+    _getAvailableTreeWidth: function() {
+        var body_width = this.getWidth() || Ext.getBody().getWidth() || 0;
+        var available_width = body_width - 20;
+        return Ext.max([550,available_width]);
+    },
 
     _getColumns: function() {
         var me = this;
@@ -174,8 +181,8 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 dataIndex: 'Name',
                 itemId: 'tree_column',
                 renderer: name_renderer,
-                minWidth: 400,
                 flex: 1,
+                minWidth: 400,
                 menuDisabled: true,
                 otherFields: ['FormattedID','ObjectID']
             },
@@ -187,13 +194,13 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                     return me._magicRenderer({name:'Project'},value,meta_data,record) || "";
                 }
             },*/
-            {
-                text:'Target Date',
-                dataIndex: 'TargetDate',
-                renderer: function(value,meta_data,record) {
-                    return me._magicRenderer({name:'TargetDate'},value,meta_data,record) || "";
-                }
-            },
+            // {
+            //     text:'Target Date',
+            //     dataIndex: 'TargetDate',
+            //     renderer: function(value,meta_data,record) {
+            //         return me._magicRenderer({name:'TargetDate'},value,meta_data,record) || "";
+            //     }
+            //},
             {
                 text:'Leaf Story Count',
                 dataIndex:'LeafStoryCount',
@@ -284,7 +291,6 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 var field = null;
                 Ext.Object.each(me.models, function(key,model){
                     field = model.getField(field_name);
-                    console.log(key,field_name);
                     if ( field ) { return false; }
                 });
 
