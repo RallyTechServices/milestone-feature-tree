@@ -77,8 +77,6 @@
 
                         var ordered_items_as_hashes = CArABU.technicalservices.util.TreeBuilding.convertModelsToHashes(calculated_items);
 
-                        this.logger.log('Hashes After Load: ', ordered_items_as_hashes);
-
                         this._makeStoreAndShowGrid(ordered_items_as_hashes);
                     },
                     failure:function(error_msg){
@@ -98,16 +96,15 @@
         this._fetchTargetItems().then({
             scope: this,
             success:function(target_items){
-                this.logger.log('_gatherData - target items: ', target_items);
-                var fetched_items_by_oid = {};
+                var target_items_by_oid = {};
 
                 Ext.Array.each(target_items,function(item){
-                    fetched_items_by_oid[item.get('ObjectID')] = item;
+                    target_items_by_oid[item.get('ObjectID')] = item;
                 });
                 this.fireEvent('afterloadtargets',this,target_items);
                 var promises = [];
 
-                promises.push(this._fetchChildItems(target_items,fetched_items_by_oid));
+                promises.push(this._fetchChildItems(target_items,target_items_by_oid));
 
                 Deft.Promise.all(promises).then({
                     scope: this,
@@ -168,7 +165,6 @@
         return deferred.promise;
     },
     _fetchChildItems: function(parent_items,fetched_items, deferred){
-        this.logger.log('_fetchChildItems',parent_items.length);
         if ( !deferred ) {
             deferred = Ext.create('Deft.Deferred');
         }
@@ -182,6 +178,7 @@
         var number_of_oids = parent_oids.length;
 
         if (number_of_oids > 0 ) {
+            this.logger.log("Searching children in chunks of " + this.targetChunk + " parents");
             for ( var i=0; i<number_of_oids; i+=this.targetChunk ) {
                 var chunk_array = parent_oids.slice(i,i+this.targetChunk);
                 promises.push(this._fetchByArrayOfValues(this.lowestPIName,chunk_array,"Milestones.ObjectID"));
@@ -200,12 +197,12 @@
                             fetched_items[child.get('ObjectID')] = child;
                         }
                     },this);
+                    // recurse if we were drilling down
                     this._fetchChildItems(children,fetched_items,deferred);
                 },
                 failure: function(error_msg){ deferred.reject(error_msg); }
             });
         } else {
-            this.logger.log("resolving _fetchChildItems");
             deferred.resolve(fetched_items);
         }
         return deferred.promise;
@@ -256,7 +253,6 @@
     },
 
     _fetchByArrayOfValues:function(model_name,oids,field_name){
-        this.logger.log("_fetchByArrayOfValues (", model_name, ",", oids.length, ",", field_name ,")");
         var deferred = Ext.create('Deft.Deferred');
 
         var filters = Ext.create('Rally.data.wsapi.Filter',{property:field_name,value:oids[0]});
@@ -293,39 +289,7 @@
         Ext.create('Rally.data.wsapi.Store', config);
         return deferred.promise;
     },
-    _fetchItemsByOIDArray:function(model_name,oids){
-        this.logger.log("_fetchItemsByOIDArray (", oids.length, ")");
-        var deferred = Ext.create('Deft.Deferred');
-        var filters = Ext.create('Rally.data.wsapi.Filter',{property:'ObjectID',value:oids[0]});
 
-        for ( var i=1;i<oids.length;i++ ) {
-            filters = filters.or(Ext.create('Rally.data.wsapi.Filter',{
-                property:'ObjectID',
-                value:oids[i]
-            }));
-        }
-
-        Ext.create('Rally.data.wsapi.Store', {
-            autoLoad: true,
-            model: model_name,
-            fetch: this._getFetchNames(),
-            filters: filters,
-            context: {
-                project: null
-            },
-            listeners:  {
-                scope: this,
-                load: function(store, records, success){
-                    if (success) {
-                        deferred.resolve(records);
-                    } else {
-                        deferred.reject('Error loading ' + model_name + ' items');
-                    }
-               }
-           }
-        });
-        return deferred.promise;
-    },
     _doColumnCalculations:function(ordered_items){
         var calculated_items = ordered_items;
         Ext.Array.each(this.columns,function(column){
@@ -342,7 +306,6 @@
     },
 
     _makeStoreAndShowGrid: function(ordered_items){
-        this.logger.log('_makeStoreAndShowGrid',ordered_items);
         if ( ordered_items.length == 0 ) {
             this.add({
                 xtype:'container',
@@ -362,8 +325,6 @@
                     children: ordered_items
                 }
             });
-
-            this.logger.log('Ready to add tree panel ', this.columns);
 
             var tree = this.add({
                 xtype:'treepanel',
