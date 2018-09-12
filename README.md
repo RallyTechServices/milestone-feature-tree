@@ -2,10 +2,26 @@
 
 ## Summary/Description
 
-![screenshot](./images/screenshot.png "This is an example")
+An app that shows a set of milestones along with features that are directly
+associated with the milestones.
+
+![screenshot](./images/screenshot.png "Screenshot")
+
+* Both Milestones AND Features are scoped according to the user's choice of project and project scoping
 
 ## Development Notes
 
+* This was tested with Features, but if the lowest level PI is named something else, it _should_ work.
+* This has not been tested at scale, expecting that there are not a million milestones.
+
+* Counts/Sums are rolled up using a definition for calculator in the column definition.
+* Percent Dones are rolled up using convert on the model (via the column definition).
+    * Convert is used because a roll up of .5 and .5 should not equal 1 and would only match .5 if stories are exactly distributed
+
+* TODO:
+    * Advanced Query Filter
+    * Column Selector
+    * Export?
 
 ### First Load
 
