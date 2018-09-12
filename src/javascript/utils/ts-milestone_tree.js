@@ -27,7 +27,7 @@
      * but the length of that get is limited.  Instead of calculating the best length,
      * we just define a number of OIDs to shove into the call
      */
-    targetChunk: 125,
+    targetChunk: 100,
 
     respectScopeForChildren: true,
 
