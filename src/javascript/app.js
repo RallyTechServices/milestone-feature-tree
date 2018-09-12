@@ -6,7 +6,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
 
     items: [
         {xtype:'container', itemId:'header', minHeight: 30},
-        {xtype:'container', itemId:'filter_container', minHeight: 50},
+        {xtype:'container', itemId:'filter_container'},
         {xtype:'container', itemId:'display_box'}
     ],
 
