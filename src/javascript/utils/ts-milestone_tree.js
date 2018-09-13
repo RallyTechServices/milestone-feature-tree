@@ -336,7 +336,7 @@
                 cls: this.tree_cls,
                 rootVisible: false,
                 enableColumnMove: false,
-                sortableColumns: false,
+                sortableColumns: true,
                 autoScroll: true,
                 rowLines: true,
                 width: this.width,

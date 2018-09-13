@@ -45,7 +45,9 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             modelNames: ['milestone','portfolioitem'],
             fieldBlackList: ['Changesets','Connections','Collaborators',
                 'Description','Notes','ObjectID','ObjectUUID','RevisionHistory',
-                'Risks','Subscription','VersionId','Workspace'],
+                'Risks','Subscription','VersionId','Workspace','DragAndDropRank',
+                'Rank','Artifacts'
+            ],
             context: this.getContext(),
             stateful: true,
             stateId: this.getContext().getScopedStateId('fieldpicker'),
@@ -291,19 +293,25 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 var field = null;
                 Ext.Object.each(me.models, function(key,model){
                     field = model.getField(field_name);
+                    console.log(field_name,field);
                     if ( field ) { return false; }
                 });
 
                 if ( !field ) { console.log('cannot find field ', field_name); }
 
-                columns.push({
+                var config = {
                     text:field.displayName.replace(/\(.*\)/,""),
                     dataIndex:field.name,
                     menuDisabled: true,
                     renderer:function(value,meta_data,record){
                         return me._magicRenderer(field,value,meta_data,record) || "";
-                    }
-                });
+                    },
+                    sortable: true
+                };
+                if ( !field.sortable || field_name === "Discussion" ){
+                    config.sortable = false;
+                }
+                columns.push(config);
             });
         }
         return columns;
