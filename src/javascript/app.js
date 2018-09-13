@@ -5,7 +5,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     defaults: { margin: 10 },
 
     items: [
-        {xtype:'container', itemId:'header', minHeight: 30},
+        {xtype:'container', itemId:'header', minHeight: 30 },
         {xtype:'container', itemId:'filter_container'},
         {xtype:'container', itemId:'display_box'}
     ],
@@ -18,8 +18,6 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     },
 
     launch: function() {
-        this.logger.log('launch');
-
         this.logger.setSaveForLater(this.getSetting('saveLog'));
         this._fetchModels().then({
             scope: this,
@@ -40,6 +38,17 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
 
         container.add(this._getFilterPickerConfig());
         container.add(this._getColumnPickerConfig());
+        //container.add(this._getViewComboConfig());
+    },
+
+    _getViewComboConfig: function() {
+        console.log('context',this.getContext());
+        return {
+            xtype:'tssharedviewcombobox',
+            context: this.getContext(),
+            margin: '2 0 0 50',
+            cmp: this
+        };
     },
 
     _getColumnPickerConfig: function() {
@@ -409,6 +418,15 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
 
     isExternal: function(){
         return typeof(this.getAppId()) == 'undefined';
+    },
+
+    getCurrentView: function() {
+        return {
+            toggleState: "grid",
+            columns: [],
+            quickFilters: [],
+            advancedFilters: []
+        };
     }
 
 });
