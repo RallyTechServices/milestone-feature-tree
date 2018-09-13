@@ -335,13 +335,12 @@
                 store: tree_store,
                 cls: this.tree_cls,
                 rootVisible: false,
-                enableColumnMove: false,
+                enableColumnMove: true,
                 sortableColumns: true,
                 autoScroll: true,
                 rowLines: true,
                 width: this.width,
                 height: this.height,
-
                 columns: this.columns
             });
         }
