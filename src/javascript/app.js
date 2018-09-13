@@ -184,7 +184,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 itemId: 'tree_column',
                 renderer: name_renderer,
                 flex: 1,
-                minWidth: 400,
+                minWidth: 250,
                 menuDisabled: true,
                 otherFields: ['FormattedID','Name']
             },
@@ -319,7 +319,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     _nameRenderer: function(value,meta_data,record) {
         var display_value = record.get('Name');
         if ( record.get('FormattedID') ) {
-            var link_text = record.get('FormattedID') + ": " + value;
+            var link_text = record.get('FormattedID') + ": " + display_value;
             var url = Rally.nav.Manager.getDetailUrl( record );
             display_value = "<a target='_blank' href='" + url + "'>" + link_text + "</a>";
         }
