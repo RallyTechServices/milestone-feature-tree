@@ -29,6 +29,8 @@
      */
     targetChunk: 100,
 
+    context: null,
+
     respectScopeForChildren: true,
 
     layout: 'border',
@@ -98,7 +100,8 @@
         this._fetchTargetItems().then({
             scope: this,
             success:function(target_items){
-                var target_items_by_oid = {};
+                var target_items_by_oid = {},
+                    me = this;
 
                 Ext.Array.each(target_items,function(item){
                     target_items_by_oid[item.get('ObjectID')] = item;
@@ -106,13 +109,16 @@
                 this.fireEvent('afterloadtargets',this,target_items);
                 var promises = [];
 
-                promises.push(this._fetchChildItems(target_items,target_items_by_oid));
+                promises.push(function(){
+                    return me._fetchChildItems(target_items,target_items_by_oid);
+                });
 
-                Deft.Promise.all(promises).then({
+                this.logger.log('start sequence');
+                Deft.Chain.sequence(promises).then({
                     scope: this,
                     success: function(all_unordered_items){
                         var flattened_array = Ext.Array.flatten(all_unordered_items);
-
+                        this.logger.log('after chain', all_unordered_items);
                         var all_unordered_items_hash = {};
                         if ( flattened_array.length > 0 ) {
                             all_unordered_items_hash = flattened_array[0];
@@ -329,23 +335,36 @@
             });
 
             this.logger.log("width:", this.width);
-            var tree = this.add({
-                xtype:'treepanel',
-                region: 'center',
-                store: tree_store,
-                cls: this.tree_cls,
-                rootVisible: false,
-                enableColumnMove: true,
-                sortableColumns: true,
-                autoScroll: true,
-                rowLines: true,
-                width: this.width,
-                height: this.height,
-                columns: this.columns
-            });
+            var config = this._getTreeConfig(tree_store);
+
+            var tree = this.add(config);
         }
 
         this.fireEvent('aftertree',this,tree);
+    },
+
+    _getTreeConfig: function(tree_store) {
+        var config = {
+            xtype:'treepanel',
+            region: 'center',
+            store: tree_store,
+            cls: this.tree_cls,
+            rootVisible: false,
+            enableColumnMove: true,
+            sortableColumns: true,
+            autoScroll: true,
+            rowLines: true,
+            width: this.width,
+            height: this.height,
+            columns: this.columns
+        };
+        if ( this.context ) {
+            Ext.Object.merge(config,{
+                stateful: true,
+                stateId: this.context.getScopedStateId('ms-tree-grid'),
+            });
+        }
+        return config;
     },
 
     _fetchPortfolioNames: function(){

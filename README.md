@@ -19,9 +19,11 @@ associated with the milestones.
     * Convert is used because a roll up of .5 and .5 should not equal 1 and would only match .5 if stories are exactly distributed
 
 * TODO:
-    * Column Rearranging & Persisting sizing
-    * Scrolling large width
-    * Export?
+    * View saving
+    * Paging?
+    * Gears?
+    * The color rules for the Milestone don't seem to match anything real
+    * Don't re-create the tree every time a column/filter changes so that the columns stay sized/arranged
 
 ### First Load
 

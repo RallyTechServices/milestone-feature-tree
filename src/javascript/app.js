@@ -18,11 +18,14 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     },
 
     launch: function() {
+        this.logger.log('launch');
+
         this.logger.setSaveForLater(this.getSetting('saveLog'));
         this._fetchModels().then({
             scope: this,
             success:function(models){
                 this.models = models;
+                this.logger.log('models:',models);
                 this._addControls();
             },
             failure: function(msg) {
@@ -103,7 +106,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     },
 
     _onFilterChange: function(inlineFilterButton) {
-        this.logger.log('--',inlineFilterButton.getTypesAndFilters());
+        this.logger.log('filter changed:',inlineFilterButton.getTypesAndFilters());
         var typesandfilters = inlineFilterButton.getTypesAndFilters();
 
         this.targetFilter = typesandfilters && typesandfilters.filters;
@@ -117,6 +120,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     },
 
     _addTree: function() {
+        this.logger.log("Ready to add tree");
         var container = this.down('#display_box');
         container.removeAll();
 
@@ -126,9 +130,12 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
         var available_width = this._getAvailableTreeWidth();
         this.logger.log('Height/Width: ', available_height, available_width);
 
+        var context = this.getContext();
+
         var tree_config = {
             xtype:'tsmilestonetree',
             columns: this._getColumns(),
+            context: context,
             targetType: 'Milestone',
             height: available_height,
             maxHeight: available_height,
@@ -282,7 +289,6 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
 
         var additional_fields = fieldpicker && fieldpicker.getFields();
         if ( additional_fields ) {
-            this.logger.log("Additional fields: ", additional_fields);
             var blackListFields = ['FormattedID','Name','PercentDoneByStoryPlanEstimate','PercentDoneByStoryCount'];
 
             Ext.Array.each(additional_fields, function(field_name) {
@@ -293,7 +299,6 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 var field = null;
                 Ext.Object.each(me.models, function(key,model){
                     field = model.getField(field_name);
-                    console.log(field_name,field);
                     if ( field ) { return false; }
                 });
 
