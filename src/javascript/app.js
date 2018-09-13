@@ -180,13 +180,13 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             {
                 xtype: 'treecolumn',
                 text: 'Item',
-                dataIndex: 'Name',
+                dataIndex: 'ObjectID',
                 itemId: 'tree_column',
                 renderer: name_renderer,
                 flex: 1,
                 minWidth: 400,
                 menuDisabled: true,
-                otherFields: ['FormattedID','ObjectID']
+                otherFields: ['FormattedID','Name']
             },
             /*{
                 text:'Project',
