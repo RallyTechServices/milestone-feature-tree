@@ -118,7 +118,6 @@
                     scope: this,
                     success: function(all_unordered_items){
                         var flattened_array = Ext.Array.flatten(all_unordered_items);
-                        this.logger.log('after chain', all_unordered_items);
                         var all_unordered_items_hash = {};
                         if ( flattened_array.length > 0 ) {
                             all_unordered_items_hash = flattened_array[0];
@@ -314,6 +313,7 @@
     },
 
     _makeStoreAndShowGrid: function(ordered_items){
+        this.tree = null;
         if ( ordered_items.length == 0 ) {
             this.add({
                 xtype:'container',
@@ -334,13 +334,16 @@
                 }
             });
 
-            this.logger.log("width:", this.width);
             var config = this._getTreeConfig(tree_store);
 
-            var tree = this.add(config);
+            this.grid= this.add(config);
         }
 
-        this.fireEvent('aftertree',this,tree);
+        this.fireEvent('aftertree',this,this.grid);
+    },
+
+    _getGrid: function() {
+        return this.grid;
     },
 
     _getTreeConfig: function(tree_store) {
@@ -358,12 +361,12 @@
             height: this.height,
             columns: this.columns
         };
-        if ( this.context ) {
-            Ext.Object.merge(config,{
-                stateful: true,
-                stateId: this.context.getScopedStateId('ms-tree-grid'),
-            });
-        }
+        // if ( this.context ) {
+        //     Ext.Object.merge(config,{
+        //         stateful: true,
+        //         stateId: this.context.getScopedStateId('ms-tree-grid'),
+        //     });
+        // }
         return config;
     },
 

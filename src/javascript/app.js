@@ -35,14 +35,12 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
 
     _addControls: function() {
         var container = this.down('#header')
-
         container.add(this._getFilterPickerConfig());
         container.add(this._getColumnPickerConfig());
-        //container.add(this._getViewComboConfig());
+        container.add(this._getViewComboConfig());
     },
 
     _getViewComboConfig: function() {
-        console.log('context',this.getContext());
         return {
             xtype:'tssharedviewcombobox',
             context: this.getContext(),
@@ -137,7 +135,6 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
 
         var available_height = this._getAvailableTreeHeight();
         var available_width = this._getAvailableTreeWidth();
-        this.logger.log('Height/Width: ', available_height, available_width);
 
         var context = this.getContext();
 
@@ -167,9 +164,12 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
         if ( this.targetFilter ) {
             tree_config.targetFilter = this.targetFilter;
         }
-        container.add(tree_config);
+        this.tree = container.add(tree_config);
     },
 
+    _getTree: function() {
+        return this.tree;
+    },
     //
     _getAvailableTreeHeight: function() {
         var body_height = this.getHeight() || Ext.getBody().getHeight() || 0;
@@ -182,7 +182,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
         return Ext.max([550,available_width]);
     },
 
-    _getColumns: function() {
+    _getStandardColumnsByDataIndex: function() {
         var me = this;
         var name_renderer = function(value,meta_data,record) {
             return me._nameRenderer(value,meta_data,record);
@@ -192,8 +192,8 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             return me._magicRenderer(field,value,meta_data,record);
         }
 
-        var columns = [
-            {
+        return {
+            'ObjectID': {
                 xtype: 'treecolumn',
                 text: 'Item',
                 dataIndex: 'ObjectID',
@@ -204,22 +204,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 menuDisabled: true,
                 otherFields: ['FormattedID','Name']
             },
-            /*{
-                text:'Project',
-                dataIndex:'Project',
-                menuDisabled: true,
-                renderer:function(value,meta_data,record){
-                    return me._magicRenderer({name:'Project'},value,meta_data,record) || "";
-                }
-            },*/
-            // {
-            //     text:'Target Date',
-            //     dataIndex: 'TargetDate',
-            //     renderer: function(value,meta_data,record) {
-            //         return me._magicRenderer({name:'TargetDate'},value,meta_data,record) || "";
-            //     }
-            //},
-            {
+            'LeafStoryCount': {
                 text:'Leaf Story Count',
                 dataIndex:'LeafStoryCount',
                 menuDisabled: true,
@@ -228,7 +213,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                     return val = item.get('LeafStoryCount') || 0;
                 }
             },
-            {
+            'AcceptedLeafStoryCount': {
                 text: 'Accepted Leaf Story Count',
                 dataIndex: 'AcceptedLeafStoryCount',
                 hidden: true,
@@ -237,7 +222,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                     return val = item.get('AcceptedLeafStoryCount') || 0;
                 }
             },
-            {
+            'PercentDoneByStoryCount':{
                 text: 'Percent Done By Story Count',
                 dataIndex: 'PercentDoneByStoryCount',
                 menuDisabled: true,
@@ -255,7 +240,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                     return Ext.Number.toFixed(result,2);
                 }
             },
-            {
+            'LeafStoryPlanEstimateTotal': {
                 text:'Leaf Story Plan Estimate Total',
                 dataIndex:'LeafStoryPlanEstimateTotal',
                 menuDisabled: true,
@@ -264,7 +249,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                     return val = item.get('LeafStoryPlanEstimateTotal') || 0;
                 }
             },
-            {
+            'AcceptedLeafStoryPlanEstimateTotal': {
                 text: 'Accepted Leaf Plan Estimate Total',
                 dataIndex: 'AcceptedLeafStoryPlanEstimateTotal',
                 hidden: true,
@@ -273,7 +258,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                     return val = item.get('AcceptedLeafStoryPlanEstimateTotal') || 0;
                 }
             },
-            {
+            'PercentDoneByStoryPlanEstimate': {
                 text: 'Percent Done By Story Plan Estimate',
                 dataIndex: 'PercentDoneByStoryPlanEstimate',
                 menuDisabled: true,
@@ -292,27 +277,64 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                     return Ext.Number.toFixed(result,2);
                 }
             }
-        ];
+        }
+    },
+
+    _getColumns: function() {
+        var me = this;
+
+        var name_renderer = function(value,meta_data,record) {
+            return me._nameRenderer(value,meta_data,record);
+        };
+
+        var magic_renderer = function(field,value,meta_data,record){
+            return me._magicRenderer(field,value,meta_data,record);
+        }
 
         var fieldpicker = this.down('tsfieldpickerbutton');
+        var blackListFields = ['FormattedID','Name','_type'];
+        var fieldpicker_fields = Ext.Array.map(fieldpicker && fieldpicker.getFields() || [], function(field){
+            return { dataIndex: field, hidden: false };
+        });
 
-        var additional_fields = fieldpicker && fieldpicker.getFields();
-        if ( additional_fields ) {
-            var blackListFields = ['FormattedID','Name','PercentDoneByStoryPlanEstimate','PercentDoneByStoryCount'];
+        var columns = this.saved_columns || fieldpicker_fields;
+        columns = Ext.Array.push(['ObjectID'], columns);
+        columns = Ext.Array.push(columns, fieldpicker_fields);// make sure we get them all
 
-            Ext.Array.each(additional_fields, function(field_name) {
+        var fields = [];
+        var standard_fields = this._getStandardColumnsByDataIndex();
 
-                if ( Ext.Array.contains(blackListFields,field_name) ) {
-                    return;
-                }
-                var field = null;
-                Ext.Object.each(me.models, function(key,model){
-                    field = model.getField(field_name);
-                    if ( field ) { return false; }
-                });
+        var used_names = [];
 
-                if ( !field ) { console.log('cannot find field ', field_name); }
+        Ext.Array.each(columns, function(column) {
+            if ( _.isString(column) ) {
+                column = { dataIndex: column };
+            }
 
+            if ( Ext.Array.contains(blackListFields,column.dataIndex) || Ext.Array.contains(used_names,column.dataIndex)) {
+                return;
+            }
+            used_names.push(column.dataIndex);
+
+            console.log('column - ',column.dataIndex, column);
+
+            var standard_config = standard_fields[column.dataIndex] || {};
+            console.log('standard - ', standard_config);
+
+            var field = null;
+            Ext.Object.each(me.models, function(key,model){
+                field = model.getField(column.dataIndex);
+                if ( field ) { return false; }
+            });
+            if ( !field ) {
+                console.log('cannot find field ', column.dataIndex);
+                return;
+            }
+
+            var merged_config = {};
+            if ( standard_fields[column.dataIndex] ) {
+                merged_config = Ext.apply(standard_config,column);
+            } else {
                 var config = {
                     text:field.displayName.replace(/\(.*\)/,""),
                     dataIndex:field.name,
@@ -322,15 +344,27 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                     },
                     sortable: true
                 };
-                if ( !field.sortable || field_name === "Discussion" ){
+                if ( !field.sortable || column.dataIndex === "Discussion" ){
                     config.sortable = false;
                 }
-                columns.push(config);
-            });
-        }
-        return columns;
+                merged_config = Ext.apply(config, column);
+            }
+            fields.push(merged_config);
+        });
+
+        Ext.Object.each(standard_fields,function(name,config){
+            if ( Ext.Array.contains(used_names,name) ) {
+                return;
+            }
+            fields.push(config);
+        });
+        console.log(fields);
+
+        return fields;
     },
+
     _nameRenderer: function(value,meta_data,record) {
+        console.log('--',value,record);
         var display_value = record.get('Name');
         if ( record.get('FormattedID') ) {
             var link_text = record.get('FormattedID') + ": " + display_value;
@@ -420,10 +454,58 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
         return typeof(this.getAppId()) == 'undefined';
     },
 
+    _getView: function() {
+        var grid = this._getTree() && this._getTree()._getGrid();
+        if ( ! grid ) { return null; }
+        return grid.getView();
+    },
+
+    // takes an extjs view
+    _getColumnsFromView: function(view) {
+        var columns = view.getGridColumns();
+        var savable_column_information = Ext.Array.map(columns, function(column){
+            var column_information = {
+                text: column.text,
+                hidden: column.hidden
+            };
+            if ( column.width ) {
+                column_information.width = column.width;
+            } else if ( column.flex ) {
+                column_information.flex = column.flex;
+            }
+
+            if ( column.dataIndex ) {
+                column_information.dataIndex = column.dataIndex;
+            }
+
+            return column_information;
+        });
+        return savable_column_information;
+    },
+
+    setCurrentView: function(view) {
+        // set field picker
+        var field_list = [];
+        Ext.Array.each(view.columns || [], function(column){
+            if ( ! column.hidden ) {
+                field_list.push(column.dataIndex);
+            }
+        });
+        this.saved_columns = view.columns;
+        this.down('tsfieldpickerbutton') && this.down('tsfieldpickerbutton').updateFields(field_list);
+    },
+
     getCurrentView: function() {
+        var view = this._getView();
+        if ( ! view ) {
+            return {};
+        }
+
+        var columns = this._getColumnsFromView(view);
+
         return {
             toggleState: "grid",
-            columns: [],
+            columns: columns || [],
             quickFilters: [],
             advancedFilters: []
         };

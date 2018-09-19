@@ -16,7 +16,7 @@ Ext.define('CA.technicalservices.userutilities.FieldPicker', {
     cls: 'field-picker-btn secondary rly-small',
 
     margin: '2 0 0 0',
-    
+
     alwaysSelectedValues: ['FormattedID', 'Name'], // DragAndDropRank gets added in init if Drag and Drop is enabled for the workspace in the component's context
 
     fieldBlackList: [],
@@ -178,6 +178,9 @@ Ext.define('CA.technicalservices.userutilities.FieldPicker', {
         if (this.popover && this.popover.down('rallyfieldpicker')) {
             this.popover.down('rallyfieldpicker').setValue(fields.join(','));
         }
+        if ( !suspendLoad ) {
+            this.fireEvent('fieldsupdated', fields);
+        }
         this.saveState();
     },
     getState: function() {
@@ -198,7 +201,5 @@ Ext.define('CA.technicalservices.userutilities.FieldPicker', {
 
         this.updateFields(fields);
         popover.close();
-
-        this.fireEvent('fieldsupdated', fields);
     }
 });

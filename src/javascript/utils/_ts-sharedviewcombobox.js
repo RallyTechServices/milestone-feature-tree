@@ -47,9 +47,7 @@ Ext.define('CArABU.technicalservices.SharedViewComboBox',{
     constructor: function(config) {
         this.mergeConfig(config);
         this.config.storeConfig = this._getStoreConfig();
-        console.log('storeconfig',this.config.storeConfig);
         this.config.listConfig = this._getListConfig();
-        console.log('listconfig',this.config.listConfig);
 
         var id = this._getSharedViewId();
 
@@ -67,15 +65,11 @@ Ext.define('CArABU.technicalservices.SharedViewComboBox',{
         if (this.sharedViewId && this.stateful && !this._hasState()) {
             this.applyState(this._mockSharedViewState());
         }
-        console.log('a');
         this.on('select', this._selectView, this);
-        console.log('b');
         this.cmp && this.cmp.on('viewstatesave', this._onCmpViewStateSave, this, { buffer: 200});
-        console.log('c');
         this.on('beforestatesave', function() {
             return !!this.store.getRange().length;
         }, this);
-        console.log('c');
         this.subscribe(this, Rally.Message.objectCreate, this._onObjectCreate, this);
         this.subscribe(this, Rally.Message.objectUpdate, this._onObjectChange, this);
         this.subscribe(this, Rally.Message.objectDestroy, this._onObjectDestroy, this);
@@ -258,7 +252,6 @@ Ext.define('CArABU.technicalservices.SharedViewComboBox',{
     },
 
     _getStoreConfig: function() {
-        console.log('_getStoreConfig');
 
         return {
             autoLoad: true,
@@ -319,7 +312,6 @@ Ext.define('CArABU.technicalservices.SharedViewComboBox',{
     },
 
     _getFilters: function() {
-        console.log('_getFilters');
         var context = this.getContext(),
             filters = [
                 {
@@ -394,7 +386,6 @@ Ext.define('CArABU.technicalservices.SharedViewComboBox',{
     },
 
     _addDefaultViews: function() {
-        console.log('_addDefaultViews');
 
         if (this.store) {
             this.store.add(this._getDefaultItems().concat(this._getDefaultViews()));
@@ -416,12 +407,10 @@ Ext.define('CArABU.technicalservices.SharedViewComboBox',{
     },
 
     _insertViewIntoStore: function() {
-        console.log('_insertViewIntoStore');
 
         var filters = this._getFilters(),
             store = this.store;
         filters.push({property: 'ObjectID', value: this.sharedViewId});
-        console.log('here');
 
         store.suspendEvents(true);
 
@@ -556,7 +545,6 @@ Ext.define('CArABU.technicalservices.SharedViewComboBox',{
     },
 
     _createSharedViewDialog: function(record){
-        console.log('_createSharedViewDialog');
         this.dialog = Ext.widget({
             xtype: 'rallysharedviewdialog',
             cmp: this.cmp,
@@ -587,7 +575,6 @@ Ext.define('CArABU.technicalservices.SharedViewComboBox',{
     },
 
     _isViewPreference: function(record){
-        console.log('_isViewPreference');
         return record.self.typePath === 'preference' &&
             record.get('Type') === 'View' &&
             record.get('AppId') === this.getContext().getAppId();
@@ -677,7 +664,6 @@ Ext.define('CArABU.technicalservices.SharedViewComboBox',{
     },
 
     getContext: function() {
-        console.log('context:', this.context);
         return this.context;
     }
 
