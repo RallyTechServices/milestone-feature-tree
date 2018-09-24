@@ -97,10 +97,11 @@ Ext.define('CArABU.technicalservices.PortfolioItemMenu', {
             record: record
         });
 
-        // items.push({
-        //     xtype:'tsrecordmenuitemremove',
-        //     record: record
-        // });
+        items.push({
+            xtype:'tsrecordmenuitemremove',
+            record: record,
+            view: this.view
+        });
 
         items.push(
             {
