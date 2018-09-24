@@ -208,6 +208,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             'ObjectID': {
                 xtype: 'treecolumn',
                 text: 'Item',
+                draggable: false,
                 dataIndex: 'ObjectID',
                 itemId: 'tree_column',
                 renderer: name_renderer,
