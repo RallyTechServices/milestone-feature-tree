@@ -4,6 +4,7 @@ Ext.define('TSTreeModel',{
         { name: 'FormattedID', type: 'String' },
         { name: 'Name', type:'String' },
         { name: '_ref', type:'String' },
-        { name: '_type', type:'String' }
+        { name: '_type', type:'String' },
+        { name: '__parent', type:'Number'}
     ]
 });

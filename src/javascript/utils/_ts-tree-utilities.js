@@ -18,13 +18,18 @@ Ext.define('CArABU.technicalservices.util.TreeBuilding', {
         var root_array = [];
         Ext.Object.each(item_hash, function(oid,item){
             if ( !item.get('children') ) { item.set('children',[]); }
+            item.set('__parent',0);
+
             if ( item.get('Milestones') ) {
                 var tagArray = item.get('Milestones')._tagsNameArray;
                 Ext.Array.each(tagArray, function(tag){
                     var oid = parseInt(tag._ref.replace(/.*\//,''), 10);
                     if ( item_hash[oid] ) {
                         var childArray = item_hash[oid].get('children');
-                        childArray.push(item);
+                        var clone = item.copy();
+                        clone.set('__parent',oid);
+
+                        childArray.push(clone);
                         item_hash[oid].set('children',childArray);
                     }
                 });
@@ -123,17 +128,30 @@ Ext.define('CArABU.technicalservices.util.TreeBuilding', {
         return config.root_items;
     },
     _setValueFromChildren:function(parent_item,field_name,calculator,leaves_only){
-        var parent_value = parent_item.get(field_name) || 0;
+        var parent_value = 0;
+        var children = [];
+        if ( _.isFunction(parent_item.get) ) {
+            parent_value = parent_item.get(field_name) || 0;
+            children = parent_item.get('children') || [];
+        } else {
+            parent_value = parent_item[field_name] || 0;
+        }
         if ( calculator ) {
             parent_value = this._calculate(parent_item,calculator);
         }
-        var children = parent_item.get('children') || [];
+
 
         if ( leaves_only && children.length > 0 ) { parent_value = 0; }
 
         Ext.Array.each(children,function(child_item) {
             this._setValueFromChildren(child_item,field_name,calculator,leaves_only);
-            var child_value = child_item.get(field_name) || 0;
+            var child_value = 0;
+            if ( _.isFunction(child_item.get) ) {
+                child_value = child_item.get(field_name) || 0;
+            } else {
+                child_value = child_item[field_name] || 0;
+            }
+
             if ( calculator && child_value == 0 ) {
                 child_value = this._calculate(child_item,calculator);
             }
@@ -148,7 +166,6 @@ Ext.define('CArABU.technicalservices.util.TreeBuilding', {
             return 1;
         }
         return calculator(item);
-
     },
     /**
      * Given an array of root items, find nodes in the tree where field_name contains field_value

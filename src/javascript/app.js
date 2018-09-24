@@ -120,7 +120,6 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             config.inlineFilterButtonConfig.inlineFilterPanelConfig = Ext.apply(config.inlineFilterButtonConfig.inlineFilterPanelConfig, this.filterConfig);
         }
 
-        console.log('setting to:', config);
         return config;
     },
 
@@ -223,7 +222,13 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 menuDisabled: true,
                 hidden: true,
                 calculator: function(item) {
-                    return val = item.get('LeafStoryCount') || 0;
+                    var val = 0;
+                    if ( _.isFunction(item.get) ) {
+                        val = item.get('LeafStoryCount') || 0;
+                    } else {
+                        val = item.LeafStoryCount || 0;
+                    }
+                    return val;
                 }
             },
             'AcceptedLeafStoryCount': {
@@ -232,7 +237,13 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 hidden: true,
                 menuDisabled: true,
                 calculator: function(item) {
-                    return val = item.get('AcceptedLeafStoryCount') || 0;
+                    var val = 0;
+                    if ( _.isFunction(item.get) ) {
+                        val = item.get('AcceptedLeafStoryCount') || 0;
+                    } else {
+                        val = item.AcceptedLeafStoryCount || 0;
+                    }
+                    return val;
                 }
             },
             'PercentDoneByStoryCount':{
@@ -244,8 +255,12 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 },
                 // use convert because it's not a rollup
                 convert: function(value,item) {
-                    var partial = item.get('AcceptedLeafStoryCount') || 0;
-                    var total = item.get('LeafStoryCount') || 0;
+                    var partial = 0;
+                    var total = 0;
+                    if ( _.isFunction(item.get) ) {
+                        partial = item.get('AcceptedLeafStoryCount') || 0;
+                        total = item.get('LeafStoryCount') || 0;
+                    }
                     var result = 0;
                     if ( total !== 0 ) {
                         result = partial/total;
@@ -259,7 +274,13 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 menuDisabled: true,
                 hidden: true,
                 calculator: function(item) {
-                    return val = item.get('LeafStoryPlanEstimateTotal') || 0;
+                    var val = 0;
+                    if ( _.isFunction(item.get) ) {
+                        val = item.get('LeafStoryPlanEstimateTotal') || 0;
+                    } else {
+                        val = item.LeafStoryPlanEstimateTotal || 0;
+                    }
+                    return val;
                 }
             },
             'AcceptedLeafStoryPlanEstimateTotal': {
@@ -268,7 +289,13 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 hidden: true,
                 menuDisabled: true,
                 calculator: function(item) {
-                    return val = item.get('AcceptedLeafStoryPlanEstimateTotal') || 0;
+                    var val = 0;
+                    if ( _.isFunction(item.get) ) {
+                        val = item.get('AcceptedLeafStoryPlanEstimateTotal') || 0;
+                    } else {
+                        val = item.AcceptedLeafStoryPlanEstimateTotal || 0;
+                    }
+                    return val;
                 }
             },
             'PercentDoneByStoryPlanEstimate': {
@@ -280,8 +307,15 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 },
                 // use convert because it's not a rollup
                 convert: function(value,item) {
-                    var partial = item.get('AcceptedLeafStoryPlanEstimateTotal') || 0;
-                    var total = item.get('LeafStoryPlanEstimateTotal') || 0;
+                    var partial = 0;
+                    var total = 0;
+                    if ( _.isFunction(item.get) ) {
+                        partial = item.get('AcceptedLeafStoryPlanEstimateTotal') || 0;
+                        total = item.get('LeafStoryPlanEstimateTotal') || 0;
+                    } else {
+                        partial = item.AcceptedLeafStoryPlanEstimateTotal || 0;
+                        total = item.LeafStoryPlanEstimateTotal || 0;
+                    }
 
                     var result = 0;
                     if ( total !== 0 ) {
@@ -369,6 +403,13 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             fields.push(config);
         });
 
+        fields = Ext.Array.push([{
+            xtype:'tsrowactioncolumn',
+            dataIndex:'_type',
+            text: ''
+        }],fields);
+
+        console.log('fields', fields);
         return fields;
     },
 
@@ -508,9 +549,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
         });
         this.saved_columns = view.columns;
         this.down('tsfieldpickerbutton') && this.down('tsfieldpickerbutton').updateFields(field_list);
-        console.log('view', view);
 
-        console.log('updating with', view.filterState);
         //this.down('#filter_box').removeAll();
         this.down('#filter_container').removeAll();
         var default_state = {
@@ -537,7 +576,6 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
 
         var filtercontrol = this.down('rallyinlinefiltercontrol');
         var state = this.down('rallyinlinefilterbutton').getState();
-        console.log('state',state);
 
         return {
             toggleState: "grid",
