@@ -5,13 +5,18 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     defaults: { margin: 10 },
 
     items: [
-        {xtype:'container', itemId:'header', minHeight: 30 },
+        {xtype:'container', itemId:'header', minHeight: 30 , layout: 'hbox', items: [
+            {xtype:'container',itemId:'filter_box'},
+            {xtype:'container',itemId:'column_box'},
+            {xtype:'container',itemId:'view_box'}
+        ]},
         {xtype:'container', itemId:'filter_container'},
         {xtype:'container', itemId:'display_box'}
     ],
 
     // targetFilter is the filter for the top-level item(s)
     targetFilter: null,
+    typesAndFilter: null,
 
     integrationHeaders : {
         name : "CArABU.app.MilestoneFeatureTree"
@@ -35,16 +40,16 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
 
     _addControls: function() {
         var container = this.down('#header')
-        container.add(this._getFilterPickerConfig());
-        container.add(this._getColumnPickerConfig());
-        container.add(this._getViewComboConfig());
+        container.down('#filter_box').add(this._getFilterPickerConfig());
+        container.down('#column_box').add(this._getColumnPickerConfig());
+        container.down('#view_box').add(this._getViewComboConfig());
     },
 
     _getViewComboConfig: function() {
         return {
             xtype:'tssharedviewcombobox',
             context: this.getContext(),
-            margin: '2 0 0 50',
+            margin: '2 0 0 10',
             cmp: this
         };
     },
@@ -116,7 +121,9 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
         this.logger.log('filter changed:',inlineFilterButton.getTypesAndFilters());
         var typesandfilters = inlineFilterButton.getTypesAndFilters();
 
+        this.typesAndFilter = typesandfilters;
         this.targetFilter = typesandfilters && typesandfilters.filters;
+
         if ( this.targetFilter.length === 0 ) {
             this.targetFilter = null;
         } else {
@@ -316,10 +323,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             }
             used_names.push(column.dataIndex);
 
-            console.log('column - ',column.dataIndex, column);
-
             var standard_config = standard_fields[column.dataIndex] || {};
-            console.log('standard - ', standard_config);
 
             var field = null;
             Ext.Object.each(me.models, function(key,model){
@@ -358,13 +362,11 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             }
             fields.push(config);
         });
-        console.log(fields);
 
         return fields;
     },
 
     _nameRenderer: function(value,meta_data,record) {
-        console.log('--',value,record);
         var display_value = record.get('Name');
         if ( record.get('FormattedID') ) {
             var link_text = record.get('FormattedID') + ": " + display_value;
@@ -425,7 +427,6 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             fieldLabel: '',
             margin: check_box_margins,
             boxLabel: 'Save Logging<br/><span style="color:#999999;"><i>Save last 100 lines of log for debugging.</i></span>'
-
         }];
     },
 
@@ -455,8 +456,16 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     },
 
     _getView: function() {
-        var grid = this._getTree() && this._getTree()._getGrid();
-        if ( ! grid ) { return null; }
+        var tree = this._getTree();
+        if ( !tree ) {
+            console.log('no tree');
+            return null;
+        }
+        var grid = tree.getGrid();
+        if ( ! grid ) {
+            console.log('no grid');
+            return null;
+        }
         return grid.getView();
     },
 
@@ -493,9 +502,23 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
         });
         this.saved_columns = view.columns;
         this.down('tsfieldpickerbutton') && this.down('tsfieldpickerbutton').updateFields(field_list);
+        console.log('view', view);
+
+        var filter_config = {
+            quickFilterPanelConfig: view.quickFilters || {},
+            advancedFilterPanelConfig: view.advancedFilters || {},
+
+        };
+        //this.down('rallyinlinefilterpanel').setAdvancedFilterPanelConfig(view.advancedFilters || {});
+        //this.down('rallyinlinefilterpanel').setQuickFilterPanelConfig(view.quickFilters || {});
+        this.down('rallyinlinefilterbutton').setInlineFilterPanelConfig(filter_config);
+        console.log('updating with', filter_config);
+        this.down('rallyinlinefilterbutton').updateLayout();
+        //this.down('#filter_box').removeAll();
     },
 
     getCurrentView: function() {
+        // todo: deal with when there's no grid
         var view = this._getView();
         if ( ! view ) {
             return {};
@@ -503,11 +526,16 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
 
         var columns = this._getColumnsFromView(view);
 
+        var filtercontrol = this.down('rallyinlinefiltercontrol');
+        var state = this.down('rallyinlinefilterbutton').getState();
+        var advanced_filter = this.down('rallyinlinefilterpanel').getAdvancedFilterPanelConfig();
+        var quick_filter = this.down('rallyinlinefilterpanel').getQuickFilterPanelConfig();
+
         return {
             toggleState: "grid",
             columns: columns || [],
-            quickFilters: [],
-            advancedFilters: []
+            advancedFilters: advanced_filter,
+            quickFilters: quick_filter
         };
     }
 

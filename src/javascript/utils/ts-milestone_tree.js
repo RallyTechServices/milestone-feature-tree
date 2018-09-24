@@ -342,7 +342,7 @@
         this.fireEvent('aftertree',this,this.grid);
     },
 
-    _getGrid: function() {
+    getGrid: function() {
         return this.grid;
     },
 
