@@ -16,7 +16,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
 
     // targetFilter is the filter for the top-level item(s)
     targetFilter: null,
-    typesAndFilter: null,
+    filterConfig: null,
 
     integrationHeaders : {
         name : "CArABU.app.MilestoneFeatureTree"
@@ -46,12 +46,13 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     },
 
     _getViewComboConfig: function() {
-        return {
+        var config = {
             xtype:'tssharedviewcombobox',
             context: this.getContext(),
             margin: '2 0 0 10',
             cmp: this
         };
+        return config;
     },
 
     _getColumnPickerConfig: function() {
@@ -80,7 +81,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     _getFilterPickerConfig: function() {
         var blackListFields = ['FlowState'],
             whiteListFields = ['Tags'];
-        return {
+        var config = {
             xtype: 'rallyinlinefiltercontrol',
             align: 'left',
             inlineFilterButtonConfig: {
@@ -115,13 +116,18 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 }
             }
         };
+        if ( this.filterConfig ) {
+            config.inlineFilterButtonConfig.inlineFilterPanelConfig = Ext.apply(config.inlineFilterButtonConfig.inlineFilterPanelConfig, this.filterConfig);
+        }
+
+        console.log('setting to:', config);
+        return config;
     },
 
     _onFilterChange: function(inlineFilterButton) {
         this.logger.log('filter changed:',inlineFilterButton.getTypesAndFilters());
         var typesandfilters = inlineFilterButton.getTypesAndFilters();
 
-        this.typesAndFilter = typesandfilters;
         this.targetFilter = typesandfilters && typesandfilters.filters;
 
         if ( this.targetFilter.length === 0 ) {
@@ -504,17 +510,20 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
         this.down('tsfieldpickerbutton') && this.down('tsfieldpickerbutton').updateFields(field_list);
         console.log('view', view);
 
-        var filter_config = {
-            quickFilterPanelConfig: view.quickFilters || {},
-            advancedFilterPanelConfig: view.advancedFilters || {},
-
-        };
-        //this.down('rallyinlinefilterpanel').setAdvancedFilterPanelConfig(view.advancedFilters || {});
-        //this.down('rallyinlinefilterpanel').setQuickFilterPanelConfig(view.quickFilters || {});
-        this.down('rallyinlinefilterbutton').setInlineFilterPanelConfig(filter_config);
-        console.log('updating with', filter_config);
-        this.down('rallyinlinefilterbutton').updateLayout();
+        console.log('updating with', view.filterState);
         //this.down('#filter_box').removeAll();
+        this.down('#filter_container').removeAll();
+        var default_state = {
+            advancedCollapsed: false,
+            advancedFilters: [],
+            collapsed: false,
+            condition: "",
+            matchType: "AND",
+            quickFilterFields: [],
+            quickFilters: [],
+            types: []
+        };
+        this.down('rallyinlinefilterbutton').applyState(view.filterState || default_state);
     },
 
     getCurrentView: function() {
@@ -528,14 +537,12 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
 
         var filtercontrol = this.down('rallyinlinefiltercontrol');
         var state = this.down('rallyinlinefilterbutton').getState();
-        var advanced_filter = this.down('rallyinlinefilterpanel').getAdvancedFilterPanelConfig();
-        var quick_filter = this.down('rallyinlinefilterpanel').getQuickFilterPanelConfig();
+        console.log('state',state);
 
         return {
             toggleState: "grid",
             columns: columns || [],
-            advancedFilters: advanced_filter,
-            quickFilters: quick_filter
+            filterState: state
         };
     }
 
