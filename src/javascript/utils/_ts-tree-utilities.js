@@ -198,5 +198,10 @@ Ext.define('CArABU.technicalservices.util.TreeBuilding', {
                 }
             }
         }
+    },
+    removeRootsWithoutChildren: function(items) {
+        return Ext.Array.filter(items, function(item){
+            return item.get('children') && item.get('children').length > 0;
+        });
     }
 });

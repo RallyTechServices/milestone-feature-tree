@@ -33,6 +33,13 @@
 
     respectScopeForChildren: true,
 
+    /**
+     * @type Boolean limitToInScopeFeatures
+     *
+     * When presenting Milestones, only include the ones that have features that are in scope
+     */
+    limitToInScopeFeatures: true,
+
     layout: 'border',
     //autoScroll: true,
 
@@ -77,8 +84,10 @@
 
                         var ordered_items = CArABU.technicalservices.util.TreeBuilding.constructRootItems(all_unordered_items);
 
+                        if ( this.limitToInScopeFeatures ) {
+                            ordered_items = CArABU.technicalservices.util.TreeBuilding.removeRootsWithoutChildren(ordered_items);
+                        }
                         var calculated_items = this._doColumnCalculations(ordered_items);
-
                         var ordered_items_as_hashes = CArABU.technicalservices.util.TreeBuilding.convertModelsToHashes(calculated_items);
 
                         this._makeStoreAndShowGrid(ordered_items_as_hashes);
@@ -287,6 +296,10 @@
                 }
             }
         };
+
+        if ( this.limitToInScopeFeatures ) {
+            this.respectScopeForChildren = true;
+        }
 
         if ( ! this.respectScopeForChildren ) {
             config.context = {

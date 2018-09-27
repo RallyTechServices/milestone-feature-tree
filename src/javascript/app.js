@@ -8,7 +8,8 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
         {xtype:'container', itemId:'header', minHeight: 30 , layout: 'hbox', items: [
             {xtype:'container',itemId:'filter_box'},
             {xtype:'container',itemId:'column_box'},
-            {xtype:'container',itemId:'view_box'}
+            {xtype:'container',itemId:'view_box'},
+            {xtype:'container',itemId:'limit_box', margin: '0 0 0 15'}
         ]},
         {xtype:'container', itemId:'filter_container'},
         {xtype:'container', itemId:'display_box'}
@@ -40,9 +41,25 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
 
     _addControls: function() {
         var container = this.down('#header')
+        container.down('#limit_box').add(this._getCheckboxConfig());
         container.down('#filter_box').add(this._getFilterPickerConfig());
         container.down('#column_box').add(this._getColumnPickerConfig());
         container.down('#view_box').add(this._getViewComboConfig());
+    },
+
+    _getCheckboxConfig: function() {
+        var config = {
+            xtype:'rallycheckboxfield',
+            itemId: 'limitToInScopeFeatures_cb',
+            boxLabel: 'Limit to Milestones with in-scope Features',
+            hideLabel: true,
+            value: true,
+            listeners: {
+                scope: this,
+                change: this._addTree
+            }
+        };
+        return config;
     },
 
     _getViewComboConfig: function() {
@@ -159,6 +176,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             maxHeight: available_height,
             width: available_width,
             logger: this.logger,
+            limitToInScopeFeatures: this.down('#limitToInScopeFeatures_cb') && this.down('#limitToInScopeFeatures_cb').getValue(),
             respectScopeForChildren: true,
             listeners: {
                 scope: this,
