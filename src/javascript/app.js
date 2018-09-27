@@ -407,6 +407,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                     },
                     sortable: true
                 };
+
                 if ( !field.sortable || column.dataIndex === "Discussion" ){
                     config.sortable = false;
                 }
@@ -444,6 +445,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
         return this._magicRenderer({name:'FormattedID'},value,meta_data,record);
 
     },
+
     _magicRenderer: function(field,value,meta_data,record){
         var field_name = field.name || field.get('name');
         var record_type = record.get('_type');

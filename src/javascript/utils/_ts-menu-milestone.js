@@ -97,6 +97,11 @@ Ext.define('CArABU.technicalservices.MilestoneMenu', {
             record: record
         });
 
+        items.push({
+            xtype: 'tsrecordmenuitemfieldedit',
+            record: record
+        });
+
         items.push(
             {
                 xtype: 'menuseparator'

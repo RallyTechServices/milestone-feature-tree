@@ -348,7 +348,6 @@
             });
 
             var config = this._getTreeConfig(tree_store);
-
             this.grid= this.add(config);
         }
 
