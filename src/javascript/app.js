@@ -84,7 +84,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             context: this.getContext(),
             stateful: true,
             stateId: this.getContext().getScopedStateId('fieldpicker'),
-            alwaysSelectedValues: ['FormattedID'],
+            alwaysSelectedValues: ['FormattedID','Name'],
             listeners: {
                 fieldsupdated: function(fields){
                     this._addTree();
@@ -413,6 +413,11 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                     config.sortable = false;
                 }
                 merged_config = Ext.apply(config, column);
+                // force Name to be the one that takes up the slack for fitting the grid
+                console.log(column);
+                if ( merged_config.dataIndex == 'Name' ) {
+                    merged_config.flex = 1;
+                }
             }
             fields.push(merged_config);
         });
