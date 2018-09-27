@@ -84,7 +84,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             context: this.getContext(),
             stateful: true,
             stateId: this.getContext().getScopedStateId('fieldpicker'),
-            alwaysSelectedValues: ['FormattedID', 'PercentDoneByStoryPlanEstimate', 'PercentDoneByStoryCount'],
+            alwaysSelectedValues: ['FormattedID'],
             listeners: {
                 fieldsupdated: function(fields){
                     this._addTree();
@@ -203,7 +203,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     //
     _getAvailableTreeHeight: function() {
         var body_height = this.getHeight() || Ext.getBody().getHeight() || 0;
-        var available_height = body_height - 100;
+        var available_height = body_height - 200;
         return Ext.max([200,available_height]);
     },
     _getAvailableTreeWidth: function() {
@@ -230,8 +230,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 dataIndex: 'ObjectID',
                 itemId: 'tree_column',
                 renderer: name_renderer,
-                flex: 1,
-                minWidth: 250,
+                minWidth: 50,
                 menuDisabled: true,
                 otherFields: ['FormattedID','Name']
             },
@@ -272,6 +271,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 renderer: function(value,meta_data,record){
                     return me._magicRenderer({name:'PercentDoneByStoryCount'},value,meta_data,record) || "";
                 },
+                hidden: true,
                 // use convert because it's not a rollup
                 convert: function(value,item) {
                     var partial = 0;
@@ -321,6 +321,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 text: 'Percent Done By Story Plan Estimate',
                 dataIndex: 'PercentDoneByStoryPlanEstimate',
                 menuDisabled: true,
+                hidden: true,
                 renderer: function(value,meta_data,record){
                     return me._magicRenderer({name:'PercentDoneByStoryPlanEstimate'},value,meta_data,record) || "";
                 },

@@ -18,10 +18,11 @@ associated with the milestones.
 * Percent Dones are rolled up using convert on the model (via the column definition).
     * Convert is used because a roll up of .5 and .5 should not equal 1 and would only match .5 if stories are exactly distributed
 
+* CAUTION: This is not a rally tree grid, so don't make assumptions about what might be "easy".  For example, this
+does not have the paging toolbar.  It's not straightforward to add that to an ext treepanel (or at least not as
+straightforward of just adding showPagingToolbar)
+
 * TODO:
-    * View saving
-    * Paging?
-    * Gears?
     * The color rules for the Milestone don't seem to match anything real
     * Don't re-create the tree every time a column/filter changes so that the columns stay sized/arranged
 
