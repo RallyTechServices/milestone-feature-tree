@@ -349,6 +349,7 @@
     _getTreeConfig: function(tree_store) {
         var config = {
             xtype:'treepanel',
+            context: Rally.getApp().getContext(),
             region: 'center',
             store: tree_store,
             cls: this.tree_cls,
@@ -359,7 +360,11 @@
             rowLines: true,
             width: this.width,
             height: this.height,
-            columns: this.columns
+            columns: this.columns,
+            plugins: [{ptype: 'rallyboardformattedidhoverable'}],
+            getRecord: function(tr) {
+                return this.view.getRecord(tr);
+            }
         };
         // if ( this.context ) {
         //     Ext.Object.merge(config,{
@@ -409,7 +414,8 @@
         var base_fields = [
             { name: 'ObjectID', type: 'auto' },
             { name: 'Name', type: 'string' },
-            { name: '_type', type: 'string' }
+            { name: '_type', type: 'string' },
+            { name: 'Workspace', type: 'object' } // required for popover
         ];
 
         var additional_fields = Ext.Array.map(this.columns,function(column){
@@ -424,7 +430,7 @@
     },
 
     _getFetchNames: function() {
-        var base_field_names = ['ObjectID','_type','Name'];
+        var base_field_names = ['ObjectID','_type','Name','Workspace'];
         var parent_field_names = ['Parent','PortfolioItem','Requirement','WorkProduct','TestFolder','TestCase'];
         var children_field_names = ['Children','Tasks','UserStories','TestCases','Milestones'];
 

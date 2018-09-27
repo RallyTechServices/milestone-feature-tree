@@ -67,7 +67,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             context: this.getContext(),
             stateful: true,
             stateId: this.getContext().getScopedStateId('fieldpicker'),
-            alwaysSelectedValues: ['FormattedID', 'Name', 'PercentDoneByStoryPlanEstimate', 'PercentDoneByStoryCount'],
+            alwaysSelectedValues: ['FormattedID', 'PercentDoneByStoryPlanEstimate', 'PercentDoneByStoryCount'],
             listeners: {
                 fieldsupdated: function(fields){
                     this._addTree();
@@ -340,7 +340,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
         }
 
         var fieldpicker = this.down('tsfieldpickerbutton');
-        var blackListFields = ['FormattedID','Name','_type'];
+        var blackListFields = ['FormattedID','_type'];
         var fieldpicker_fields = Ext.Array.map(fieldpicker && fieldpicker.getFields() || [], function(field){
             return { dataIndex: field, hidden: false };
         });
@@ -410,18 +410,21 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             text: ''
         }],fields);
 
-        console.log('fields', fields);
         return fields;
     },
 
     _nameRenderer: function(value,meta_data,record) {
-        var display_value = record.get('Name');
-        if ( record.get('FormattedID') ) {
-            var link_text = record.get('FormattedID') + ": " + display_value;
-            var url = Rally.nav.Manager.getDetailUrl( record );
-            display_value = "<a target='_blank' href='" + url + "'>" + link_text + "</a>";
+        if ( record.get('_type') == "milestone") {
+            var display_value = record.get('Name');
+            if ( record.get('FormattedID') ) {
+                var link_text = record.get('FormattedID');
+                var url = Rally.nav.Manager.getDetailUrl( record );
+                display_value = "<a class='formatted-id-link' target='_top' href='" + url + "'>" + link_text + "</a>";
+            }
+            return display_value;
         }
-        return display_value;
+        return this._magicRenderer({name:'FormattedID'},value,meta_data,record);
+
     },
     _magicRenderer: function(field,value,meta_data,record){
         var field_name = field.name || field.get('name');
