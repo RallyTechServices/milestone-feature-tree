@@ -79,7 +79,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             fieldBlackList: ['Changesets','Connections','Collaborators',
                 'Description','Notes','ObjectID','ObjectUUID','RevisionHistory',
                 'Risks','Subscription','VersionId','Workspace','DragAndDropRank',
-                'Rank','Artifacts'
+                'Rank','Artifacts','DisplayColor'
             ],
             context: this.getContext(),
             stateful: true,

@@ -378,12 +378,12 @@
                 return this.view.getRecord(tr);
             }
         };
-        // if ( this.context ) {
-        //     Ext.Object.merge(config,{
-        //         stateful: true,
-        //         stateId: this.context.getScopedStateId('ms-tree-grid'),
-        //     });
-        // }
+        if ( this.context ) {
+            Ext.Object.merge(config,{
+                stateful: true,
+                stateId: this.context.getScopedStateId('ms-tree-grid'),
+            });
+        }
         return config;
     },
 
