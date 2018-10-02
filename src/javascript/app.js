@@ -91,6 +91,12 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             alwaysSelectedValues: ['FormattedID','Name'],
             listeners: {
                 fieldsupdated: function(fields){
+                    var background_field_names = ['_type','_ObjectID'];
+                    if ( this.saved_columns ) {
+                        this.saved_columns = Ext.Array.filter(this.saved_columns, function(col){
+                            return ( Ext.Array.contains(background_field_names,col.dataIndex) || Ext.Array.contains(fields,col.dataIndex));
+                        });
+                    }
                     this._addTree();
                 },
                 afterrender: this._addTree,
@@ -423,7 +429,6 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 }
                 merged_config = Ext.apply(config, column);
                 // force Name to be the one that takes up the slack for fitting the grid
-                console.log(column);
                 if ( merged_config.dataIndex == 'Name' ) {
                     merged_config.flex = 1;
                 }
@@ -626,7 +631,7 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     getState: function() {
         var state = this.getCurrentView();
         state.saved_columns = state.columns;
-
+        this.saved_columns = state.saved_columns;
         return state;
     }
 });
