@@ -16,11 +16,9 @@ Ext.define('CArABU.technicalservices.SharedViewComboBox',{
     extend: 'Rally.ui.combobox.ComboBox',
     alias: 'widget.tssharedviewcombobox',
 
-
     mixins: {
         messageable: 'Rally.Messageable'
     },
-
 
     config: {
         emptyText: 'Select Saved View...',
@@ -545,8 +543,9 @@ Ext.define('CArABU.technicalservices.SharedViewComboBox',{
     },
 
     _createSharedViewDialog: function(record){
+        var me = this;
         this.dialog = Ext.widget({
-            xtype: 'rallysharedviewdialog',
+            xtype: 'tssharedviewdialog',
             cmp: this.cmp,
             enableProjectSharing: this.enableProjectSharing,
             addNewConfig: {
@@ -560,7 +559,12 @@ Ext.define('CArABU.technicalservices.SharedViewComboBox',{
                 }
             },
             additionalFilters: this.additionalFilters,
-            context: this.getContext()
+            context: this.getContext(),
+            listeners: {
+                doneselected: function(dialog){
+                    me.getStore().reload();
+                }
+            }
         });
     },
 
