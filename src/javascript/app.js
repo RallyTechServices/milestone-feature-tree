@@ -254,14 +254,17 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 dataIndex:'LeafStoryCount',
                 menuDisabled: true,
                 hidden: true,
-                calculator: function(item) {
-                    var val = 0;
-                    if ( _.isFunction(item.get) ) {
-                        val = item.get('LeafStoryCount') || 0;
+                calculator: function(child_item,parent_item) {
+                    var child_val = 0,
+                        parent_val = 0;
+                    if ( _.isFunction(child_item.get) ) {
+                        child_val = child_item.get('LeafStoryCount') || 0;
+                        parent_val = parent_item.get('LeafStoryCount') || 0;
                     } else {
-                        val = item.LeafStoryCount || 0;
+                        child_val = child_item.LeafStoryCount || 0;
+                        parent_val = parent_item.LeafStoryCount || 0;
                     }
-                    return val;
+                    return child_val + parent_val;
                 }
             },
             'AcceptedLeafStoryCount': {
@@ -269,14 +272,17 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 dataIndex: 'AcceptedLeafStoryCount',
                 hidden: true,
                 menuDisabled: true,
-                calculator: function(item) {
-                    var val = 0;
-                    if ( _.isFunction(item.get) ) {
-                        val = item.get('AcceptedLeafStoryCount') || 0;
+                calculator: function(child_item,parent_item) {
+                    var child_val = 0,
+                        parent_val = 0;
+                    if ( _.isFunction(child_item.get) ) {
+                        child_val = child_item.get('AcceptedLeafStoryCount') || 0;
+                        parent_val = parent_item.get('AcceptedLeafStoryCount') || 0;
                     } else {
-                        val = item.AcceptedLeafStoryCount || 0;
+                        child_val = child_item.AcceptedLeafStoryCount || 0;
+                        parent_val = parent_item.AcceptedLeafStoryCount || 0;
                     }
-                    return val;
+                    return child_val + parent_val;
                 }
             },
             'PercentDoneByStoryCount':{
@@ -307,14 +313,17 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 dataIndex:'LeafStoryPlanEstimateTotal',
                 menuDisabled: true,
                 hidden: true,
-                calculator: function(item) {
-                    var val = 0;
-                    if ( _.isFunction(item.get) ) {
-                        val = item.get('LeafStoryPlanEstimateTotal') || 0;
+                calculator: function(child_item,parent_item) {
+                    var child_val = 0,
+                        parent_val = 0;
+                    if ( _.isFunction(child_item.get) ) {
+                        child_val = child_item.get('LeafStoryPlanEstimateTotal') || 0;
+                        parent_val = parent_item.get('LeafStoryPlanEstimateTotal') || 0;
                     } else {
-                        val = item.LeafStoryPlanEstimateTotal || 0;
+                        child_val = child_item.LeafStoryPlanEstimateTotal || 0;
+                        parent_val = parent_item.LeafStoryPlanEstimateTotal || 0;
                     }
-                    return val;
+                    return parent_val + child_val;
                 }
             },
             'AcceptedLeafStoryPlanEstimateTotal': {
@@ -322,14 +331,17 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 dataIndex: 'AcceptedLeafStoryPlanEstimateTotal',
                 hidden: true,
                 menuDisabled: true,
-                calculator: function(item) {
-                    var val = 0;
-                    if ( _.isFunction(item.get) ) {
-                        val = item.get('AcceptedLeafStoryPlanEstimateTotal') || 0;
+                calculator: function(child_item,parent_item) {
+                    var child_val = 0,
+                        parent_val = 0;
+                    if ( _.isFunction(child_item.get) ) {
+                        child_val = child_item.get('AcceptedLeafStoryPlanEstimateTotal') || 0;
+                        parent_val = parent_item.get('AcceptedLeafStoryPlanEstimateTotal') || 0;
                     } else {
-                        val = item.AcceptedLeafStoryPlanEstimateTotal || 0;
+                        child_val = child_item.AcceptedLeafStoryPlanEstimateTotal || 0;
+                        parent_val = parent_item.AcceptedLeafStoryPlanEstimateTotal || 0;
                     }
-                    return val;
+                    return parent_val + child_val;
                 }
             },
             'PercentDoneByStoryPlanEstimate': {
@@ -357,6 +369,37 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                         result = partial/total;
                     }
                     return Ext.Number.toFixed(result,2);
+                }
+            },
+            'ActualStartDate': {
+                text:'Actual Start Date',
+                dataIndex:'ActualStartDate',
+                menuDisabled: true,
+                hidden: true,
+                renderer: function(value,meta_data,record){
+                    return me._magicRenderer({name:'ActualStartDate'},value,meta_data,record) || "";
+                },
+                calculator: function(child_item,parent_item) {
+                    // make the parent have the earliest start date that isn't null
+                    var child_val = null,
+                        parent_val = null;
+                    if ( _.isFunction(child_item.get) ) {
+                        child_val = child_item.get('ActualStartDate') || null;
+                        parent_val = parent_item.get('ActualStartDate') || null;
+                    } else {
+                        child_val = child_item.ActualStartDate || null;
+                        parent_val = parent_item.ActualStartDate || null;
+                    }
+                    if ( ! child_val ) {
+                        return parent_val;
+                    }
+                    if ( ! parent_val ) {
+                        return child_val;
+                    }
+                    if ( child_val < parent_val ) {
+                        return child_val;
+                    }
+                    return parent_val;
                 }
             }
         }
@@ -463,7 +506,6 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             return display_value;
         }
         return this._magicRenderer({name:'FormattedID'},value,meta_data,record);
-
     },
 
     _magicRenderer: function(field,value,meta_data,record){

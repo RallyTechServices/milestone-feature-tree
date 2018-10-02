@@ -136,11 +136,6 @@ Ext.define('CArABU.technicalservices.util.TreeBuilding', {
         } else {
             parent_value = parent_item[field_name] || 0;
         }
-        if ( calculator ) {
-            parent_value = this._calculate(parent_item,calculator);
-        }
-
-
         if ( leaves_only && children.length > 0 ) { parent_value = 0; }
 
         Ext.Array.each(children,function(child_item) {
@@ -152,20 +147,22 @@ Ext.define('CArABU.technicalservices.util.TreeBuilding', {
                 child_value = child_item[field_name] || 0;
             }
 
-            if ( calculator && child_value == 0 ) {
-                child_value = this._calculate(child_item,calculator);
+            if ( calculator ) {
+               this._calculateAndSetParent(child_item,parent_item,field_name,calculator);
             }
-            parent_value += child_value;
         },this);
-        parent_item.set(field_name,parent_value);
         return;
     },
-    _calculate:function(item,calculator){
+    _calculateAndSetParent:function(child_item,parent_item,field_name,calculator){
         'use strict';
         if ( calculator == 'count' ) {
-            return 1;
+            var parent_val = parent_item.get(field_name) || 0;
+            var child_val = child_item.get(field_name) || 0;
+            parent_item.set(field_name, parent_val + child_val);
+            return;
         }
-        return calculator(item);
+        var val = calculator(child_item,parent_item);
+        parent_item.set(field_name,val);
     },
     /**
      * Given an array of root items, find nodes in the tree where field_name contains field_value
