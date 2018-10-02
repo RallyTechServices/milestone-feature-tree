@@ -4,6 +4,10 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
     logger: new CArABU.technicalservices.Logger(),
     defaults: { margin: 10 },
 
+    stateful: true,
+    stateId: 'ts-milestone-featuretree',
+    stateEvents: ['columnschanged'],
+
     items: [
         {xtype:'container', itemId:'header', minHeight: 30 , layout: 'hbox', items: [
             {xtype:'container',itemId:'filter_box'},
@@ -176,6 +180,8 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             maxHeight: available_height,
             width: available_width,
             logger: this.logger,
+            stateId: this.getContext().getScopedStateId('ts-ms-tree'),
+            stateful: true,
             limitToInScopeFeatures: this.down('#limitToInScopeFeatures_cb') && this.down('#limitToInScopeFeatures_cb').getValue(),
             respectScopeForChildren: true,
             listeners: {
@@ -188,6 +194,9 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
                 },
                 aftertree: function() {
                     this.setLoading(false);
+                },
+                columnschanged: function(tree) {
+                    this.fireEvent('columnschanged',this,tree);
                 }
             }
         };
@@ -612,6 +621,12 @@ Ext.define("CArABU.app.MilestoneFeatureTree", {
             columns: columns || [],
             filterState: state
         };
-    }
+    },
 
+    getState: function() {
+        var state = this.getCurrentView();
+        state.saved_columns = state.columns;
+
+        return state;
+    }
 });

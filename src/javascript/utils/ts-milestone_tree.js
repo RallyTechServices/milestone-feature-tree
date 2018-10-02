@@ -33,6 +33,7 @@
 
     respectScopeForChildren: true,
 
+
     /**
      * @type Boolean limitToInScopeFeatures
      *
@@ -376,12 +377,28 @@
             plugins: [{ptype: 'rallyboardformattedidhoverable'}],
             getRecord: function(tr) {
                 return this.view.getRecord(tr);
+            },
+            listeners: {
+                scope: this,
+                columnmove: function() {
+                    this.fireEvent('columnschanged',this);
+                },
+                columnsave: function() {
+                    this.fireEvent('columnschanged',this);
+                },
+                columnresize: function(){
+                    this.fireEvent('columnschanged',this);
+                },
+                columnshow: function() {
+                    this.fireEvent('columnschanged',this);
+                }
             }
         };
         if ( this.context ) {
             Ext.Object.merge(config,{
                 stateful: true,
                 stateId: this.context.getScopedStateId('ms-tree-grid'),
+                stateEvents: ['columnmove','columnsave','columnresize','columnshow']
             });
         }
         return config;
